@@ -4,7 +4,7 @@ Source code for the rgb led cube kit
 ![Example_img](https://github.com/leonZtiger/RGB-LED-cube/assets/98460339/c57770b5-b4cb-4f19-95ea-a6cf8519e32e)
 
 # Kit
-Follow the instructions from the kit and construct the cube
+Follow the instructions from the kit and construct the cube.
 Purchase kit: https://www.amazon.se/Generic-rgb-led-cube-7x7x7/dp/B0CL3JXH3V/ref=sr_1_11?crid=3AGYSZL191CJ4&keywords=rgb+led+cube&qid=1697807504&sprefix=%2Caps%2C442&sr=8-11
 See Video in action:
 
