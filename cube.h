@@ -41,14 +41,15 @@ void render_cube() {
 
 // configures the cube
 void setup_cube() {
-  cled = &FastLED.addLeds<WS2812, LED_PIN, GRB>(nullptr, DIMENSIONS * DIMENSIONS);
+  //initialize led controller
+  cled = &FastLED.addLeds<WS2812, LED_PIN, GRB>(nullptr,0);
 }
 
 // clears all pixels
-void clear() {
+void clear(CRGB color) {
   for (int i = 0; i < DIMENSIONS; i++) {
     for (int j = 0; j < DIMENSIONS * DIMENSIONS; j++) {
-      cube[i][j] = CRGB(0, 0, 0);
+      cube[i][j] = color;
     }
   }
 }
