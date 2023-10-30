@@ -1,5 +1,5 @@
 #pragma once
-#define MAX_POINTS 10
+#define MAX_POINTS 4
 
 // super class for animation objects
 class animation {
@@ -29,7 +29,7 @@ public:
 
   void tick() {
 
-    if (step == DIMENSIONS - 1)
+    if (step == DIMENSION - 1)
       dir = -1;
     else if (step <= 0)
       dir = 1;
@@ -40,8 +40,8 @@ public:
       clear(CRGB(0,0,0));
 
       // fill whole plane
-      for (int z = 0; z < DIMENSIONS; z++)
-        for (int i = 0; i < DIMENSIONS; i++) {
+      for (int z = 0; z < DIMENSION; z++)
+        for (int i = 0; i < DIMENSION; i++) {
           set_pixel(i, step, z, CRGB(125, 125, 125));
         }
 
@@ -75,11 +75,11 @@ public:
 
     clear(CRGB(0,0,0));
 
-    for (int x = 0; x < DIMENSIONS; x++) {
-      for (int z = 0; z < DIMENSIONS; z++) {
-
+    for (int x = 0; x < DIMENSION; x++) {
+      for (int z = 0; z < DIMENSION; z++) {
+        
         int y = sin(sqrtf((float)((x - 3) * (x - 3) + (z - 3) * (z - 3))) * 0.8 + step) * amplitude + D;
-        set_pixel(x, y, z, CRGB(255 * (DIMENSIONS * 1 / (float)x), 255 * (DIMENSIONS * 1 / (float)y), 255 * (DIMENSIONS * 1 / (float)z)));
+        set_pixel(x, y, z, CRGB(255 * (DIMENSION * 1 / (float)x), 255 * (DIMENSION * 1 / (float)y), 255 * (DIMENSION * 1 / (float)z)));
       }
     }
 
@@ -103,7 +103,7 @@ private:
           int x = i + center[0] - radius, y = j + center[1] - radius, z = k + center[2] - radius;
           float distance = sqrtf(pow(center[0] - x, 2) + pow(center[1] - y, 2) + pow(center[2] - z, 2));
 
-          if (x < DIMENSIONS && z < DIMENSIONS && y < DIMENSIONS && x >= 0 && y >= 0 && z >= 0) {
+          if (x < DIMENSION && z < DIMENSION && y < DIMENSION && x >= 0 && y >= 0 && z >= 0) {
             if (distance <= radius) {
 
               float inv_distance = (radius - distance);
@@ -141,9 +141,9 @@ public:
 
     clear(CRGB(0,0,0);
 
-    draw_sphere(abs(sin(radius)) * DIMENSIONS / 2, 255, 0, 0);
-    draw_sphere(abs(sin(radius + 3.14 / 3)) * DIMENSIONS / 2, 0, 255, 0);
-    draw_sphere(abs(sin(radius + 3.14 / 3 * 2)) * DIMENSIONS / 2, 0, 0, 255);
+    draw_sphere(abs(sin(radius)) * DIMENSION / 2, 255, 0, 0);
+    draw_sphere(abs(sin(radius + 3.14 / 3)) * DIMENSION / 2, 0, 255, 0);
+    draw_sphere(abs(sin(radius + 3.14 / 3 * 2)) * DIMENSION / 2, 0, 0, 255);
 
     radius += step_speed;
   }
@@ -163,7 +163,10 @@ private:
   char point_len = 0;
   float dropoff;
 
-  point points[MAX_POINTS] = { 0 };
+  point points[MAX_POINTS] = { { -DIMENSION/2, -DIMENSION/2, -DIMENSION/2, 1, 0, 0 },
+                               { DIMENSION/2, -DIMENSION/2, -DIMENSION/2, 0, 1, 0 },
+                               { DIMENSION/2 , -DIMENSION/2, DIMENSION/2, 0, 0, 1 },
+                               { -DIMENSION/2, -DIMENSION/2, DIMENSION/2, 0.5, 0, 0.5 } };
 
   float scale = 255.0f / (DIMENSION * 3);
   float theta = 0;
