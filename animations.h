@@ -1,4 +1,5 @@
 #pragma once
+#define MAX_POINTS 10
 
 // super class for animation objects
 class animation {
@@ -36,7 +37,7 @@ public:
     // delay
     if (millis() > start_del + step_speed) {
 
-      clear();
+      clear(CRGB(0,0,0));
 
       // fill whole plane
       for (int z = 0; z < DIMENSIONS; z++)
@@ -72,7 +73,7 @@ public:
     if (step >= 1000)
       step = 0;
 
-    clear();
+    clear(CRGB(0,0,0));
 
     for (int x = 0; x < DIMENSIONS; x++) {
       for (int z = 0; z < DIMENSIONS; z++) {
@@ -138,7 +139,7 @@ public:
 
   void tick() {
 
-    clear();
+    clear(CRGB(0,0,0);
 
     draw_sphere(abs(sin(radius)) * DIMENSIONS / 2, 255, 0, 0);
     draw_sphere(abs(sin(radius + 3.14 / 3)) * DIMENSIONS / 2, 0, 255, 0);
@@ -150,61 +151,86 @@ public:
 
 
 class rainbow_animation : public animation {
+
 private:
 
-  float const_r_point[3] = { -DIMENSIONS / 2.0f, -DIMENSIONS / 2.0f, -DIMENSIONS / 2.0f };
-  float const_g_point[3] = { 0, DIMENSIONS / 2.0f, DIMENSIONS / 2.0f };
-  float const_b_point[3] = { DIMENSIONS / 2.0f, -DIMENSIONS / 2.0f, -DIMENSIONS / 2.0f };
+  struct point {
+    float x, y, z;
+    float trans_x, trans_y, trans_z;
+    float r, g, b;
+  };
 
-  float r_point[3] = { 0.0f, 0.0f, 0.0f };
-  float g_point[3] = { 0.0f, 0.0f, 0.0f };
-  float b_point[3] = { 0.0f, 0.0f, 0.0f };
+  char point_len = 0;
+  float dropoff;
 
+  point points[MAX_POINTS] = { 0 };
+
+  float scale = 255.0f / (DIMENSION * 3);
   float theta = 0;
 
-  void rotate_at_y_axis(float *vector, float *transformed_vec) {
+  void rotate_y_axis(point &vec) {
 
-    transformed_vec[1] = vector[1] + (DIMENSIONS / 2.0f);
-    transformed_vec[0] = cos(theta) * vector[0] + vector[2] * sin(theta) + (DIMENSIONS / 2.0f);
-    transformed_vec[2] = sin(theta) * -vector[0] + vector[2] * cos(theta) + (DIMENSIONS / 2.0f);
+    // rotate and translate vector
+    vec.trans_x = cos(theta) * vec.x + vec.z * sin(theta) + (DIMENSION / 2.0f);
+    vec.trans_y = vec.y + (DIMENSION / 2.0f);
+    vec.trans_z = sin(theta) * -vec.x + vec.z * cos(theta) + (DIMENSION / 2.0f);
   }
 
-
-  void rotate_at_x_axis(float *vector, float *transformed_vec) {
-
-    transformed_vec[0] = vector[0] + (DIMENSIONS / 2.0f);
-    transformed_vec[1] = cos(theta) * vector[1] - vector[2] * sin(theta) + (DIMENSIONS / 2.0f);
-    transformed_vec[2] = sin(theta) * vector[1] + vector[2] * cos(theta) + (DIMENSIONS / 2.0f);
+  void rotate_x_axis(point &vec) {
+    // rotate and translate vector
+    vec.trans_x = vec.x + (DIMENSION / 2.0f);
+    vec.trans_y = cos(theta) * vec.y + vec.z * sin(theta) + (DIMENSION / 2.0f);
+    vec.trans_z = sin(theta) * -vec.y + vec.z * cos(theta) + (DIMENSION / 2.0f);
   }
 
 public:
 
-  rainbow_animation() {}
+  RainbowEffect(float speed,float dropoff) {
+    this->animation_speed = speed;
+    this->dropoff = dropoff;
+  }
+
+  void add_point() {
+    if (point_len > MAX_POINTS)
+      point_len = 0;
+
+    points[point_len].r = random() / (float)RAND_MAX;
+    points[point_len].g = random() / (float)RAND_MAX;
+    points[point_len].b = random() / (float)RAND_MAX;
+
+    points[point_len].x = random() / (float)RAND_MAX*DIMENSION - DIMENSION / 2.0f;
+    points[point_len].y = random() / (float)RAND_MAX*DIMENSION - DIMENSION / 2.0f;
+    points[point_len].z = random() / (float)RAND_MAX*DIMENSION - DIMENSION / 2.0f;
+
+    point_len++;
+  }
 
   void tick() {
 
-    rotate_at_y_axis(const_r_point, r_point);
-    rotate_at_y_axis(const_g_point, g_point);
-    rotate_at_y_axis(const_b_point, b_point);
+    theta += animation_speed;
 
-    rotate_at_x_axis(const_r_point, r_point);
-    rotate_at_x_axis(const_g_point, g_point);
-    rotate_at_x_axis(const_b_point, b_point);
+    for (int i = 0; i < point_len; i++) {
+        rotate_y_axis(points[i]);
+    }
 
-    /* */
-    for (int i = 0; i < DIMENSIONS; i++)
-      for (int j = 0; j < DIMENSIONS; j++)
-        for (int k = 0; k < DIMENSIONS; k++) {
+    for (int z = 0; z < DIMENSION; z++) {
+      for (int y = 0; y < DIMENSION; y++) {
+        for (int x = 0; x < DIMENSION; x++) {
 
-          const float scale = 255.0f / pow(DIMENSIONS,2) ;
-          
-          CRGB color(scale * (abs(r_point[0] - i) + abs(r_point[1] - j) + abs(r_point[2] - k)),
-                     scale * (abs(g_point[0] - i) + abs(g_point[1] - j) + abs(g_point[2] - k)),
-                     scale * (abs(b_point[0] - i) + abs(b_point[1] - j) + abs(b_point[2] - k)));
+          char r = 0, g = 0, b = 0;
 
-          set_pixel(i, j, k, color);
+          for (int i = 0; i < point_len; i++) {
+
+            float inter_dist = scale * (DIMENSION + dropoff - (abs(points[i].trans_x - x) + abs(points[i].trans_y - y) + abs(points[i].trans_z - z)));
+            r += inter_dist * points[i].r;
+            g += inter_dist * points[i].g;
+            b += inter_dist * points[i].b;
+          }
+
+          set_pixel(x, y, z, CRGB(r, g, b));
         }
-
-    theta += step_speed;
+      }
+    }
   }
+
 };
